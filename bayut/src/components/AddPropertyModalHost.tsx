@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type {
   PropertiesMetadata,
@@ -68,6 +68,7 @@ export function AddPropertyModalHost() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [, startTransition] = useTransition();
 
   const isOpen = searchParams.get("addProperty") === "1";
 
@@ -95,7 +96,9 @@ export function AddPropertyModalHost() {
     const sp = new URLSearchParams(searchParams.toString());
     sp.delete("addProperty");
     const qs = sp.toString();
-    router.replace(qs ? `${pathname}?${qs}` : pathname);
+    startTransition(() => {
+      router.replace(qs ? `${pathname}?${qs}` : pathname);
+    });
     setError(null);
     setSuccess(null);
   }
@@ -106,21 +109,34 @@ export function AddPropertyModalHost() {
     setError(null);
     setSuccess(null);
 
+    const needsMeta = metadata === null;
+    const needsMe = Boolean(token) && me === null;
+    if (!needsMeta && !needsMe) {
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     void (async () => {
       const [meta, meRes] = await Promise.all([
-        apiGetSafe<PropertiesMetadata>("/properties/metadata", {
-          cache: "no-store",
-        }),
-        token
+        needsMeta
+          ? apiGetSafe<PropertiesMetadata>("/properties/metadata", {
+              cache: "no-store",
+            })
+          : Promise.resolve(metadata),
+        needsMe
           ? apiGetSafe<MeResponse>("/auth/me", {
               headers: { Authorization: `Bearer ${token}` },
             })
-          : Promise.resolve(null),
+          : Promise.resolve(me ? { user: me } : null),
       ]);
 
       setMetadata(meta);
-      setMe(meRes?.user ?? null);
+      if (!token) {
+        setMe(null);
+      } else {
+        setMe(meRes?.user ?? null);
+      }
       setLoading(false);
 
       if (meta?.categories?.length) {
@@ -134,7 +150,7 @@ export function AddPropertyModalHost() {
         }));
       }
     })();
-  }, [isOpen, token, form.categoryType]);
+  }, [isOpen, token, form.categoryType, metadata, me]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -152,7 +168,9 @@ export function AddPropertyModalHost() {
   function requireAuth() {
     const qs = searchParams.toString();
     const nextUrl = qs ? `${pathname}?${qs}` : pathname;
-    router.push(`/login?next=${encodeURIComponent(nextUrl)}`);
+    startTransition(() => {
+      router.push(`/login?next=${encodeURIComponent(nextUrl)}`);
+    });
   }
 
   async function submit() {
@@ -236,7 +254,9 @@ export function AddPropertyModalHost() {
       setSuccess("Property submitted successfully.");
       setSubmitting(false);
       close();
-      router.push(`/properties/${created.id}`);
+      startTransition(() => {
+        router.push(`/properties/${created.id}`);
+      });
     } catch (e) {
       const message =
         e instanceof Error ? e.message : "Failed to submit property";
@@ -310,7 +330,7 @@ export function AddPropertyModalHost() {
                     Purpose
                   </span>
                   <select
-                    className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base sm:text-sm"
+                    className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base text-zinc-900 outline-none ring-emerald-200 focus:ring-4 sm:text-sm"
                     value={form.purpose}
                     onChange={(e) =>
                       setForm((p) => ({
@@ -329,7 +349,7 @@ export function AddPropertyModalHost() {
                     Usage
                   </span>
                   <select
-                    className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base sm:text-sm"
+                    className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base text-zinc-900 outline-none ring-emerald-200 focus:ring-4 sm:text-sm"
                     value={form.categoryType}
                     onChange={(e) =>
                       setForm((p) => ({
@@ -352,7 +372,9 @@ export function AddPropertyModalHost() {
                     Category
                   </span>
                   <select
-                    className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base sm:text-sm"
+                    className={`h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base outline-none ring-emerald-200 focus:ring-4 sm:text-sm ${
+                      form.categoryId ? "text-zinc-900" : "text-zinc-500"
+                    }`}
                     value={form.categoryId}
                     onChange={(e) =>
                       setForm((p) => ({
@@ -362,6 +384,9 @@ export function AddPropertyModalHost() {
                       }))
                     }
                   >
+                    <option value="" disabled>
+                      Select category
+                    </option>
                     {categoriesForType.map((c) => (
                       <option key={c.id} value={c.id}>
                         {c.name}
@@ -375,12 +400,17 @@ export function AddPropertyModalHost() {
                     Subcategory
                   </span>
                   <select
-                    className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base sm:text-sm"
+                    className={`h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base outline-none ring-emerald-200 focus:ring-4 sm:text-sm ${
+                      form.subCategoryId ? "text-zinc-900" : "text-zinc-500"
+                    }`}
                     value={form.subCategoryId}
                     onChange={(e) =>
                       setForm((p) => ({ ...p, subCategoryId: e.target.value }))
                     }
                   >
+                    <option value="" disabled>
+                      Select subcategory
+                    </option>
                     {subCategoriesForSelected.map((s) => (
                       <option key={s.id} value={s.id}>
                         {s.name}
@@ -395,11 +425,12 @@ export function AddPropertyModalHost() {
                   Title
                 </span>
                 <input
-                  className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base sm:text-sm"
+                  className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base text-zinc-900 placeholder:text-zinc-500 outline-none ring-emerald-200 focus:ring-4 sm:text-sm"
                   value={form.title}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, title: e.target.value }))
                   }
+                  placeholder="e.g. Modern 2BR Apartment in Downtown"
                 />
               </label>
 
@@ -408,11 +439,12 @@ export function AddPropertyModalHost() {
                   Description
                 </span>
                 <textarea
-                  className="min-h-[90px] rounded-xl border border-zinc-200 bg-white px-3 py-2 text-base sm:text-sm"
+                  className="min-h-[90px] rounded-xl border border-zinc-200 bg-white px-3 py-2 text-base text-zinc-900 placeholder:text-zinc-500 outline-none ring-emerald-200 focus:ring-4 sm:text-sm"
                   value={form.description}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, description: e.target.value }))
                   }
+                  placeholder="Add key highlights, nearby landmarks, and important details…"
                 />
               </label>
 
@@ -425,10 +457,13 @@ export function AddPropertyModalHost() {
                   </span>
                   <input
                     inputMode="numeric"
-                    className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base sm:text-sm"
+                    className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base text-zinc-900 placeholder:text-zinc-500 outline-none ring-emerald-200 focus:ring-4 sm:text-sm"
                     value={form.price}
                     onChange={(e) =>
                       setForm((p) => ({ ...p, price: e.target.value }))
+                    }
+                    placeholder={
+                      form.purpose === "rent" ? "e.g. 90000" : "e.g. 1200000"
                     }
                   />
                 </label>
@@ -439,11 +474,12 @@ export function AddPropertyModalHost() {
                   </span>
                   <input
                     inputMode="numeric"
-                    className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base sm:text-sm"
+                    className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base text-zinc-900 placeholder:text-zinc-500 outline-none ring-emerald-200 focus:ring-4 sm:text-sm"
                     value={form.areaSqft}
                     onChange={(e) =>
                       setForm((p) => ({ ...p, areaSqft: e.target.value }))
                     }
+                    placeholder="e.g. 1150"
                   />
                 </label>
 
@@ -455,11 +491,12 @@ export function AddPropertyModalHost() {
                       </span>
                       <input
                         inputMode="numeric"
-                        className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base sm:text-sm"
+                        className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base text-zinc-900 placeholder:text-zinc-500 outline-none ring-emerald-200 focus:ring-4 sm:text-sm"
                         value={form.bedrooms}
                         onChange={(e) =>
                           setForm((p) => ({ ...p, bedrooms: e.target.value }))
                         }
+                        placeholder="e.g. 2"
                       />
                     </label>
                     <label className="grid gap-1">
@@ -468,11 +505,12 @@ export function AddPropertyModalHost() {
                       </span>
                       <input
                         inputMode="numeric"
-                        className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base sm:text-sm"
+                        className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base text-zinc-900 placeholder:text-zinc-500 outline-none ring-emerald-200 focus:ring-4 sm:text-sm"
                         value={form.bathrooms}
                         onChange={(e) =>
                           setForm((p) => ({ ...p, bathrooms: e.target.value }))
                         }
+                        placeholder="e.g. 2"
                       />
                     </label>
                   </>
@@ -484,7 +522,7 @@ export function AddPropertyModalHost() {
                       Rent frequency
                     </span>
                     <select
-                      className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base sm:text-sm"
+                      className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base text-zinc-900 outline-none ring-emerald-200 focus:ring-4 sm:text-sm"
                       value={form.rentFrequency}
                       onChange={(e) =>
                         setForm((p) => ({
@@ -519,11 +557,12 @@ export function AddPropertyModalHost() {
                     City
                   </span>
                   <input
-                    className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base sm:text-sm"
+                    className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base text-zinc-900 placeholder:text-zinc-500 outline-none ring-emerald-200 focus:ring-4 sm:text-sm"
                     value={form.city}
                     onChange={(e) =>
                       setForm((p) => ({ ...p, city: e.target.value }))
                     }
+                    placeholder="e.g. Dubai"
                   />
                 </label>
                 <label className="grid gap-1">
@@ -531,11 +570,12 @@ export function AddPropertyModalHost() {
                     Community
                   </span>
                   <input
-                    className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base sm:text-sm"
+                    className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base text-zinc-900 placeholder:text-zinc-500 outline-none ring-emerald-200 focus:ring-4 sm:text-sm"
                     value={form.community}
                     onChange={(e) =>
                       setForm((p) => ({ ...p, community: e.target.value }))
                     }
+                    placeholder="e.g. Downtown"
                   />
                 </label>
               </div>
@@ -545,11 +585,12 @@ export function AddPropertyModalHost() {
                   Cover image URL
                 </span>
                 <input
-                  className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base sm:text-sm"
+                  className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base text-zinc-900 placeholder:text-zinc-500 outline-none ring-emerald-200 focus:ring-4 sm:text-sm"
                   value={form.coverImageUrl}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, coverImageUrl: e.target.value }))
                   }
+                  placeholder="https://..."
                 />
               </label>
 
@@ -558,11 +599,12 @@ export function AddPropertyModalHost() {
                   Extra image URLs (comma separated)
                 </span>
                 <input
-                  className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base sm:text-sm"
+                  className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base text-zinc-900 placeholder:text-zinc-500 outline-none ring-emerald-200 focus:ring-4 sm:text-sm"
                   value={form.imageUrlsCsv}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, imageUrlsCsv: e.target.value }))
                   }
+                  placeholder="https://..., https://..."
                 />
               </label>
 

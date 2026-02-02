@@ -6,14 +6,58 @@ import { ListPropertiesQuery } from './dto/list-properties.query';
 import { ListFeaturedPropertiesQuery } from './dto/list-featured-properties.query';
 import { MailerService } from '../auth/mailer.service';
 
+type CacheEntry<T> = {
+  expiresAt: number;
+  value?: T;
+  pending?: Promise<T>;
+};
+
 @Injectable()
 export class PropertiesService {
   private readonly logger = new Logger(PropertiesService.name);
+
+  private readonly cache = new Map<string, CacheEntry<unknown>>();
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly mailer: MailerService,
   ) {}
+
+  private async getOrSetCache<T>(
+    key: string,
+    ttlMs: number,
+    factory: () => Promise<T>,
+  ): Promise<T> {
+    const now = Date.now();
+    const existing = this.cache.get(key) as CacheEntry<T> | undefined;
+
+    if (existing?.value !== undefined && existing.expiresAt > now) {
+      return existing.value;
+    }
+
+    if (existing?.pending && existing.expiresAt > now) {
+      return existing.pending;
+    }
+
+    const pending = factory()
+      .then((value) => {
+        this.cache.set(key, { expiresAt: Date.now() + ttlMs, value });
+        return value;
+      })
+      .catch((err) => {
+        this.cache.delete(key);
+        throw err;
+      });
+
+    this.cache.set(key, { expiresAt: now + ttlMs, pending });
+    return pending;
+  }
+
+  private invalidateCache(prefix: string) {
+    for (const key of this.cache.keys()) {
+      if (key.startsWith(prefix)) this.cache.delete(key);
+    }
+  }
 
   private propertySubmittedEmailHtml(args: {
     title: string;
@@ -71,194 +115,209 @@ export class PropertiesService {
   }
 
   async metadata() {
-    const [amenities, categories, citiesWithCounts, communitiesWithCounts] =
-      await Promise.all([
-        this.prisma.amenity.findMany({ orderBy: { name: 'asc' } }),
-        this.prisma.category.findMany({
-          orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
-          include: {
-            subCategories: {
+    return this.getOrSetCache(
+      'properties:metadata',
+      10 * 60 * 1000,
+      async () => {
+        const [amenities, categories, citiesWithCounts, communitiesWithCounts] =
+          await Promise.all([
+            this.prisma.amenity.findMany({ orderBy: { name: 'asc' } }),
+            this.prisma.category.findMany({
               orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
-            },
-          },
-        }),
-        this.prisma.property.groupBy({
-          by: ['city'],
-          _count: { city: true },
-          orderBy: { _count: { city: 'desc' } },
-        }),
-        this.prisma.property.groupBy({
-          by: ['community'],
-          _count: { community: true },
-          orderBy: { _count: { community: 'desc' } },
-        }),
-      ]);
+              include: {
+                subCategories: {
+                  orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+                },
+              },
+            }),
+            this.prisma.property.groupBy({
+              by: ['city'],
+              _count: { city: true },
+              orderBy: { _count: { city: 'desc' } },
+            }),
+            this.prisma.property.groupBy({
+              by: ['community'],
+              _count: { community: true },
+              orderBy: { _count: { community: 'desc' } },
+            }),
+          ]);
 
-    return {
-      purposes: ['rent', 'sale'],
-      categories: categories.map((c) => ({
-        id: c.id,
-        name: c.name,
-        type: c.type,
-        subCategories: c.subCategories.map((s) => ({
-          id: s.id,
-          name: s.name,
-        })),
-      })),
-      amenities: amenities.map((a) => ({ id: a.id, name: a.name })),
-      cities: citiesWithCounts.map((c) => ({
-        name: c.city,
-        count: c._count.city ?? 0,
-      })),
-      communities: communitiesWithCounts.map((c) => ({
-        name: c.community,
-        count: c._count.community ?? 0,
-      })),
-    };
+        return {
+          purposes: ['rent', 'sale'],
+          categories: categories.map((c) => ({
+            id: c.id,
+            name: c.name,
+            type: c.type,
+            subCategories: c.subCategories.map((s) => ({
+              id: s.id,
+              name: s.name,
+            })),
+          })),
+          amenities: amenities.map((a) => ({ id: a.id, name: a.name })),
+          cities: citiesWithCounts.map((c) => ({
+            name: c.city,
+            count: c._count.city ?? 0,
+          })),
+          communities: communitiesWithCounts.map((c) => ({
+            name: c.community,
+            count: c._count.community ?? 0,
+          })),
+        };
+      },
+    );
   }
 
   async featured(query: ListFeaturedPropertiesQuery) {
     const limit = query.limit ?? 8;
-    const where: Prisma.PropertyWhereInput = {
-      purpose: query.purpose,
-    };
+    const purpose = query.purpose ?? '';
+    const key = `properties:featured:${purpose}:${limit}`;
+    return this.getOrSetCache(key, 30 * 1000, async () => {
+      const where: Prisma.PropertyWhereInput = {
+        purpose: query.purpose,
+      };
 
-    return this.prisma.property.findMany({
-      where,
-      take: limit,
-      orderBy: { createdAt: 'desc' },
-      include: { amenities: true, category: true, subCategory: true },
+      return this.prisma.property.findMany({
+        where,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: { amenities: true, category: true, subCategory: true },
+      });
     });
   }
 
   async list(query: ListPropertiesQuery) {
-    const page = query.page ?? 1;
-    const limit = query.limit ?? 20;
-    const skip = (page - 1) * limit;
+    const key = `properties:list:${JSON.stringify(query)}`;
+    return this.getOrSetCache(key, 10 * 1000, async () => {
+      const page = query.page ?? 1;
+      const limit = query.limit ?? 20;
+      const skip = (page - 1) * limit;
 
-    const subCategoryIdList = (query.subCategoryIds ?? '')
-      .split(',')
-      .map((s) => s.trim())
-      .filter(Boolean)
-      .slice(0, 25);
+      const subCategoryIdList = (query.subCategoryIds ?? '')
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .slice(0, 25);
 
-    const bedroomList = (query.bedrooms ?? '')
-      .split(',')
-      .map((s) => Number(s.trim()))
-      .filter((n) => Number.isFinite(n) && n >= 0)
-      .map((n) => Math.floor(n))
-      .slice(0, 10);
+      const bedroomList = (query.bedrooms ?? '')
+        .split(',')
+        .map((s) => Number(s.trim()))
+        .filter((n) => Number.isFinite(n) && n >= 0)
+        .map((n) => Math.floor(n))
+        .slice(0, 10);
 
-    const bathroomList = (query.bathrooms ?? '')
-      .split(',')
-      .map((s) => Number(s.trim()))
-      .filter((n) => Number.isFinite(n) && n >= 0)
-      .map((n) => Math.floor(n))
-      .slice(0, 10);
+      const bathroomList = (query.bathrooms ?? '')
+        .split(',')
+        .map((s) => Number(s.trim()))
+        .filter((n) => Number.isFinite(n) && n >= 0)
+        .map((n) => Math.floor(n))
+        .slice(0, 10);
 
-    let minPrice = query.minPrice;
-    let maxPrice = query.maxPrice;
-    if (
-      minPrice !== undefined &&
-      maxPrice !== undefined &&
-      Number.isFinite(minPrice) &&
-      Number.isFinite(maxPrice) &&
-      minPrice > maxPrice
-    ) {
-      const tmp = minPrice;
-      minPrice = maxPrice;
-      maxPrice = tmp;
-    }
+      let minPrice = query.minPrice;
+      let maxPrice = query.maxPrice;
+      if (
+        minPrice !== undefined &&
+        maxPrice !== undefined &&
+        Number.isFinite(minPrice) &&
+        Number.isFinite(maxPrice) &&
+        minPrice > maxPrice
+      ) {
+        const tmp = minPrice;
+        minPrice = maxPrice;
+        maxPrice = tmp;
+      }
 
-    const baseWhere: Prisma.PropertyWhereInput = {
-      purpose: query.purpose,
-      city: query.city,
-      community: query.community,
-      rentFrequency: query.rentFrequency,
-      category: query.categoryType ? { type: query.categoryType } : undefined,
-      subCategoryId: subCategoryIdList.length
-        ? { in: subCategoryIdList }
-        : undefined,
-      price:
-        query.exactPrice !== undefined
-          ? {
-              equals: query.exactPrice,
-            }
-          : minPrice !== undefined || maxPrice !== undefined
+      const baseWhere: Prisma.PropertyWhereInput = {
+        purpose: query.purpose,
+        city: query.city,
+        community: query.community,
+        rentFrequency: query.rentFrequency,
+        category: query.categoryType ? { type: query.categoryType } : undefined,
+        subCategoryId: subCategoryIdList.length
+          ? { in: subCategoryIdList }
+          : undefined,
+        price:
+          query.exactPrice !== undefined
             ? {
-                gte: minPrice,
-                lte: maxPrice,
+                equals: query.exactPrice,
+              }
+            : minPrice !== undefined || maxPrice !== undefined
+              ? {
+                  gte: minPrice,
+                  lte: maxPrice,
+                }
+              : undefined,
+        areaSqft:
+          query.minAreaSqft !== undefined || query.maxAreaSqft !== undefined
+            ? {
+                gte: query.minAreaSqft,
+                lte: query.maxAreaSqft,
               }
             : undefined,
-      areaSqft:
-        query.minAreaSqft !== undefined || query.maxAreaSqft !== undefined
+      };
+
+      const bedsWhere: Prisma.PropertyWhereInput | undefined =
+        bedroomList.length
           ? {
-              gte: query.minAreaSqft,
-              lte: query.maxAreaSqft,
+              OR: bedroomList.map((b) => ({ bedrooms: { gte: b } })),
             }
-          : undefined,
-    };
+          : undefined;
 
-    const bedsWhere: Prisma.PropertyWhereInput | undefined = bedroomList.length
-      ? {
-          OR: bedroomList.map((b) => ({ bedrooms: { gte: b } })),
-        }
-      : undefined;
+      const bathsWhere: Prisma.PropertyWhereInput | undefined =
+        bathroomList.length
+          ? {
+              OR: bathroomList.map((b) => ({ bathrooms: { gte: b } })),
+            }
+          : undefined;
 
-    const bathsWhere: Prisma.PropertyWhereInput | undefined =
-      bathroomList.length
-        ? {
-            OR: bathroomList.map((b) => ({ bathrooms: { gte: b } })),
-          }
-        : undefined;
+      const keywords = (query.q ?? '')
+        .split(/\s+/)
+        .map((t) => t.trim())
+        .filter(Boolean)
+        .slice(0, 8);
 
-    const keywords = (query.q ?? '')
-      .split(/\s+/)
-      .map((t) => t.trim())
-      .filter(Boolean)
-      .slice(0, 8);
+      const keywordWhere: Prisma.PropertyWhereInput | undefined =
+        keywords.length
+          ? {
+              AND: keywords.map((token) => ({
+                OR: [
+                  { title: { contains: token, mode: 'insensitive' } },
+                  { description: { contains: token, mode: 'insensitive' } },
+                  { city: { contains: token, mode: 'insensitive' } },
+                  { community: { contains: token, mode: 'insensitive' } },
+                ],
+              })),
+            }
+          : undefined;
 
-    const keywordWhere: Prisma.PropertyWhereInput | undefined = keywords.length
-      ? {
-          AND: keywords.map((token) => ({
-            OR: [
-              { title: { contains: token, mode: 'insensitive' } },
-              { description: { contains: token, mode: 'insensitive' } },
-              { city: { contains: token, mode: 'insensitive' } },
-              { community: { contains: token, mode: 'insensitive' } },
-            ],
-          })),
-        }
-      : undefined;
+      const and: Prisma.PropertyWhereInput[] = [baseWhere];
+      if (keywordWhere) and.push(keywordWhere);
+      if (bedsWhere) and.push(bedsWhere);
+      if (bathsWhere) and.push(bathsWhere);
 
-    const and: Prisma.PropertyWhereInput[] = [baseWhere];
-    if (keywordWhere) and.push(keywordWhere);
-    if (bedsWhere) and.push(bedsWhere);
-    if (bathsWhere) and.push(bathsWhere);
+      const where: Prisma.PropertyWhereInput = { AND: and };
 
-    const where: Prisma.PropertyWhereInput = { AND: and };
+      const orderBy: Prisma.PropertyOrderByWithRelationInput =
+        query.sort === 'oldest' ? { createdAt: 'asc' } : { createdAt: 'desc' };
 
-    const orderBy: Prisma.PropertyOrderByWithRelationInput =
-      query.sort === 'oldest' ? { createdAt: 'asc' } : { createdAt: 'desc' };
+      const [items, total] = await Promise.all([
+        this.prisma.property.findMany({
+          where,
+          skip,
+          take: limit,
+          orderBy,
+          include: { amenities: true, category: true, subCategory: true },
+        }),
+        this.prisma.property.count({ where }),
+      ]);
 
-    const [items, total] = await Promise.all([
-      this.prisma.property.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy,
-        include: { amenities: true, category: true, subCategory: true },
-      }),
-      this.prisma.property.count({ where }),
-    ]);
-
-    return {
-      items,
-      page,
-      limit,
-      total,
-      hasMore: skip + items.length < total,
-    };
+      return {
+        items,
+        page,
+        limit,
+        total,
+        hasMore: skip + items.length < total,
+      };
+    });
   }
 
   async getById(id: string) {
@@ -447,6 +506,10 @@ export class PropertiesService {
       const message = err instanceof Error ? err.message : String(err);
       this.logger.error(`Property submission email failed: ${message}`);
     }
+
+    this.invalidateCache('properties:list:');
+    this.invalidateCache('properties:featured:');
+    this.cache.delete('properties:metadata');
 
     return created;
   }
