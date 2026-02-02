@@ -2,7 +2,7 @@
   "version": 2,
   "functions": {
     "api/index.ts": {
-      "runtime": "nodejs@20.x"
+      "runtime": "nodejs20.x"
     }
   },
   "routes": [{ "src": "/(.*)", "dest": "/api/index" }]
