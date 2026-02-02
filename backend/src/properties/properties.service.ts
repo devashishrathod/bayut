@@ -53,7 +53,7 @@ export class PropertiesService {
           <div style="margin-top:10px;font-size:12px;color:#374151;">
             Beds: <b>${args.beds}</b> &nbsp;|&nbsp; Baths: <b>${args.baths}</b> &nbsp;|&nbsp; Area: <b>${args.areaSqft.toLocaleString()} sqft</b>
           </div>
-          <div style="margin-top:10px;font-size:12px;color:#6b7280;">Reference: <b style=\"color:#111827;\">${args.referenceNo ?? '—'}</b></div>
+          <div style="margin-top:10px;font-size:12px;color:#6b7280;">Reference: <b style="color:#111827;">${args.referenceNo ?? '—'}</b></div>
         </div>
 
         <div style="margin:18px 0 0 0;">

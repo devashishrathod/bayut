@@ -9,13 +9,27 @@ let cachedApp: INestApplication | null = null;
 let cachedServer: ReturnType<typeof express> | null = null;
 
 async function init() {
-  if (cachedApp && cachedServer) return { app: cachedApp, server: cachedServer };
+  if (cachedApp && cachedServer)
+    return { app: cachedApp, server: cachedServer };
 
   const server = express();
   const app = await NestFactory.create(AppModule, new ExpressAdapter(server));
 
+  const allowedOrigins = (
+    process.env.FRONTEND_ORIGIN ??
+    process.env.NEXT_PUBLIC_APP_URL ??
+    'http://localhost:3000'
+  )
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+
   app.enableCors({
-    origin: process.env.FRONTEND_ORIGIN ?? process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000',
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error('Not allowed by CORS'), false);
+    },
     credentials: true,
   });
 

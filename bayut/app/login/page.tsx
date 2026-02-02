@@ -93,7 +93,7 @@ export default function LoginPage() {
 
       <div className="relative mx-auto flex min-h-screen max-w-6xl items-center justify-center px-4 py-10">
         <div className="w-full max-w-md overflow-hidden rounded-2xl border border-white/10 bg-white/95 shadow-2xl backdrop-blur">
-          <div className="flex items-center justify-between border-b border-zinc-100 px-6 py-5">
+          <div className="flex items-center justify-between border-b border-zinc-100 px-5 py-5 sm:px-6">
             <div>
               <h1 className="text-lg font-semibold text-zinc-900">
                 Log in with Email
@@ -110,7 +110,7 @@ export default function LoginPage() {
             </Link>
           </div>
 
-          <form onSubmit={onSubmit} className="px-6 py-6">
+          <form onSubmit={onSubmit} className="px-5 py-6 sm:px-6">
             <label className="block text-sm font-medium text-zinc-800">
               Email address
               <input
@@ -118,7 +118,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="mt-2 h-11 w-full rounded-xl border border-zinc-200 bg-white px-4 text-sm text-zinc-900 outline-none ring-emerald-200 focus:ring-4"
+                className="mt-2 h-11 w-full rounded-xl border border-zinc-200 bg-white px-4 text-base text-zinc-900 outline-none ring-emerald-200 focus:ring-4 sm:text-sm"
                 placeholder="Enter email"
               />
             </label>
@@ -131,7 +131,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="h-11 w-full rounded-xl border border-zinc-200 bg-white px-4 pr-12 text-sm text-zinc-900 outline-none ring-emerald-200 focus:ring-4"
+                  className="h-11 w-full rounded-xl border border-zinc-200 bg-white px-4 pr-12 text-base text-zinc-900 outline-none ring-emerald-200 focus:ring-4 sm:text-sm"
                   placeholder="Enter password"
                 />
                 <button

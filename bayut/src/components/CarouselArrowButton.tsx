@@ -16,7 +16,7 @@ export function CarouselArrowButton({
       type="button"
       onClick={onClick}
       className={
-        "pointer-events-auto inline-flex h-10 w-10 items-center justify-center rounded-full border border-zinc-200 bg-white/0 text-zinc-700 shadow-sm backdrop-blur transition-colors hover:bg-zinc-900/5 focus:outline-none focus:ring-4 focus:ring-zinc-200 " +
+        "pointer-events-auto inline-flex h-10 w-10 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-800 shadow-sm transition-colors hover:bg-zinc-50 focus:outline-none focus:ring-4 focus:ring-zinc-200 " +
         (className ?? "")
       }
       aria-label={ariaLabel}

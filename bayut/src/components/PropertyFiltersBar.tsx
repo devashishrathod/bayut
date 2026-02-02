@@ -226,7 +226,7 @@ export function PropertyFiltersBar({
               }
               aria-label="Location"
               placeholder="Enter location"
-              className="h-11 w-full min-w-0 flex-1 rounded-md border border-zinc-200 bg-white px-4 text-sm text-zinc-900 placeholder:text-zinc-500 outline-none ring-emerald-200 focus:ring-4"
+              className="h-11 w-full min-w-0 flex-1 rounded-md border border-zinc-200 bg-white px-4 text-base text-zinc-900 placeholder:text-zinc-500 outline-none ring-emerald-200 focus:ring-4 sm:text-sm"
             />
 
             <div className="w-full sm:w-[160px]">
@@ -572,16 +572,9 @@ export function PropertyFiltersBar({
                       value={value.minPrice ?? ""}
                       onChange={(e) => {
                         const minPrice = toNumber(e.target.value);
-                        const maxPrice =
-                          minPrice !== undefined &&
-                          value.maxPrice !== undefined &&
-                          value.maxPrice < minPrice
-                            ? minPrice
-                            : value.maxPrice;
                         onChange({
                           ...value,
                           minPrice,
-                          maxPrice,
                           exactPrice: undefined,
                           page: 1,
                         });
@@ -593,15 +586,8 @@ export function PropertyFiltersBar({
                       value={value.maxPrice ?? ""}
                       onChange={(e) => {
                         const maxPrice = toNumber(e.target.value);
-                        const minPrice =
-                          maxPrice !== undefined &&
-                          value.minPrice !== undefined &&
-                          value.minPrice > maxPrice
-                            ? maxPrice
-                            : value.minPrice;
                         onChange({
                           ...value,
-                          minPrice,
                           maxPrice,
                           exactPrice: undefined,
                           page: 1,

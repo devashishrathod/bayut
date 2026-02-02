@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useMemo } from 'react';
+import { useMemo } from "react";
 
 export function Pagination({
   page,
@@ -21,17 +21,17 @@ export function Pagination({
     const half = Math.floor(windowSize / 2);
 
     let start = Math.max(1, current - half);
-    let end = Math.min(totalPages, start + windowSize - 1);
+    const end = Math.min(totalPages, start + windowSize - 1);
     start = Math.max(1, end - windowSize + 1);
 
-    const items: Array<number | 'ellipsis'> = [];
+    const items: Array<number | "ellipsis"> = [];
     if (start > 1) {
       items.push(1);
-      if (start > 2) items.push('ellipsis');
+      if (start > 2) items.push("ellipsis");
     }
     for (let p = start; p <= end; p += 1) items.push(p);
     if (end < totalPages) {
-      if (end < totalPages - 1) items.push('ellipsis');
+      if (end < totalPages - 1) items.push("ellipsis");
       items.push(totalPages);
     }
     return items;
@@ -43,22 +43,25 @@ export function Pagination({
   const canNext = page < totalPages;
 
   return (
-    <nav className="mt-6 flex items-center justify-center gap-2" aria-label="Pagination">
+    <nav
+      className="mt-6 flex items-center justify-center gap-2"
+      aria-label="Pagination"
+    >
       <button
         type="button"
         onClick={() => onPageChange(Math.max(1, page - 1))}
         disabled={!canPrev}
         className={
           canPrev
-            ? 'h-9 rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-700 hover:bg-zinc-50'
-            : 'h-9 cursor-not-allowed rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-400'
+            ? "h-9 rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-700 hover:bg-zinc-50"
+            : "h-9 cursor-not-allowed rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-400"
         }
       >
         Prev
       </button>
 
       {pages.map((p, idx) =>
-        p === 'ellipsis' ? (
+        p === "ellipsis" ? (
           <span key={`e-${idx}`} className="px-2 text-sm text-zinc-500">
             …
           </span>
@@ -69,8 +72,8 @@ export function Pagination({
             onClick={() => onPageChange(p)}
             className={
               p === page
-                ? 'h-9 rounded-xl bg-emerald-600 px-3 text-sm font-semibold text-white'
-                : 'h-9 rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-700 hover:bg-zinc-50'
+                ? "h-9 rounded-xl bg-emerald-600 px-3 text-sm font-semibold text-white"
+                : "h-9 rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-700 hover:bg-zinc-50"
             }
           >
             {p}
@@ -84,8 +87,8 @@ export function Pagination({
         disabled={!canNext}
         className={
           canNext
-            ? 'h-9 rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-700 hover:bg-zinc-50'
-            : 'h-9 cursor-not-allowed rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-400'
+            ? "h-9 rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-700 hover:bg-zinc-50"
+            : "h-9 cursor-not-allowed rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-400"
         }
       >
         Next

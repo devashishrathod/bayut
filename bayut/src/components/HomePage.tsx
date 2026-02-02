@@ -4,11 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type {
-  PropertiesMetadata,
-  Property,
-  PropertyPurpose,
-} from "../types/property";
+import type { PropertiesMetadata, Property } from "../types/property";
 import { apiGetSafe } from "../lib/api";
 import { CarouselArrowButton } from "./CarouselArrowButton";
 import { PropertyCard } from "./PropertyCard";
@@ -16,23 +12,6 @@ import {
   PropertyFiltersBar,
   type PropertyFiltersState,
 } from "./PropertyFiltersBar";
-
-type Filters = {
-  purpose: PropertyPurpose;
-  q?: string;
-  city?: string;
-  community?: string;
-  bedrooms?: number;
-  bathrooms?: number;
-  categoryType?: "residential" | "commercial";
-  subCategoryIds?: string;
-  minPrice?: number;
-  maxPrice?: number;
-  minAreaSqft?: number;
-  maxAreaSqft?: number;
-  rentFrequency?: "yearly" | "monthly" | "weekly" | "daily";
-  sort?: "newest" | "oldest";
-};
 
 export function HomePage({
   initialMetadata,
@@ -48,6 +27,8 @@ export function HomePage({
   const [featuredLoading, setFeaturedLoading] = useState(false);
   const [featuredError, setFeaturedError] = useState<string | null>(null);
   const carouselRef = useRef<HTMLDivElement | null>(null);
+  const [canScrollFeaturedLeft, setCanScrollFeaturedLeft] = useState(false);
+  const [canScrollFeaturedRight, setCanScrollFeaturedRight] = useState(false);
 
   const [filters, setFilters] = useState<PropertyFiltersState>({
     purpose: "sale",
@@ -301,6 +282,28 @@ export function HomePage({
     })();
   }, []);
 
+  useEffect(() => {
+    const el = carouselRef.current;
+    if (!el) return;
+
+    function compute() {
+      const node = carouselRef.current;
+      if (!node) return;
+      setCanScrollFeaturedLeft(node.scrollLeft > 0);
+      setCanScrollFeaturedRight(
+        node.scrollLeft + node.clientWidth < node.scrollWidth - 1,
+      );
+    }
+
+    compute();
+    el.addEventListener("scroll", compute, { passive: true });
+    window.addEventListener("resize", compute);
+    return () => {
+      el.removeEventListener("scroll", compute);
+      window.removeEventListener("resize", compute);
+    };
+  }, [featuredLoading, featured.length]);
+
   const featuredToRender = featured.length ? featured : dummyFeatured;
 
   const randomizedFeatured = useMemo(() => {
@@ -387,7 +390,7 @@ export function HomePage({
               </div>
             </div>
 
-            <div className="mt-5 flex justify-center">
+            <div className="mt-7 flex justify-center">
               <a
                 href="https://www.youtube.com/watch?v=XzaewMJpDno"
                 target="_blank"
@@ -539,22 +542,26 @@ export function HomePage({
             <div className="mt-3 text-sm text-zinc-600">{featuredError}</div>
           ) : null}
 
-          <div className="pointer-events-none absolute inset-y-0 left-0 hidden items-center md:flex">
-            <CarouselArrowButton
-              direction="left"
-              ariaLabel="Scroll left"
-              onClick={() => scrollCarousel("left")}
-              className="ml-2"
-            />
-          </div>
-          <div className="pointer-events-none absolute inset-y-0 right-0 hidden items-center md:flex">
-            <CarouselArrowButton
-              direction="right"
-              ariaLabel="Scroll right"
-              onClick={() => scrollCarousel("right")}
-              className="mr-2"
-            />
-          </div>
+          {canScrollFeaturedLeft ? (
+            <div className="pointer-events-none absolute inset-y-0 left-0 hidden items-center md:flex">
+              <CarouselArrowButton
+                direction="left"
+                ariaLabel="Scroll left"
+                onClick={() => scrollCarousel("left")}
+                className="ml-2"
+              />
+            </div>
+          ) : null}
+          {canScrollFeaturedRight ? (
+            <div className="pointer-events-none absolute inset-y-0 right-0 hidden items-center md:flex">
+              <CarouselArrowButton
+                direction="right"
+                ariaLabel="Scroll right"
+                onClick={() => scrollCarousel("right")}
+                className="mr-2"
+              />
+            </div>
+          ) : null}
         </div>
       </section>
     </div>

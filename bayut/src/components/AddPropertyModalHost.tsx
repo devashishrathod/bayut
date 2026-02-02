@@ -79,7 +79,7 @@ export function AddPropertyModalHost() {
   const [success, setSuccess] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(() => defaultForm());
 
-  const token = useMemo(() => getAuthToken(), [isOpen]);
+  const token = useMemo(() => (isOpen ? getAuthToken() : null), [isOpen]);
 
   const categoriesForType = useMemo(() => {
     const list = metadata?.categories ?? [];
@@ -134,7 +134,7 @@ export function AddPropertyModalHost() {
         }));
       }
     })();
-  }, [isOpen, token]);
+  }, [isOpen, token, form.categoryType]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -250,8 +250,8 @@ export function AddPropertyModalHost() {
   const isAuthed = Boolean(token);
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-xl ring-1 ring-black/10">
+    <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40 p-4 sm:items-center">
+      <div className="w-full max-w-2xl overflow-hidden rounded-t-2xl bg-white shadow-xl ring-1 ring-black/10 sm:rounded-2xl">
         <div className="flex items-center justify-between border-b border-zinc-100 px-5 py-4">
           <div>
             <div className="text-sm font-semibold text-zinc-900">
@@ -271,7 +271,7 @@ export function AddPropertyModalHost() {
           </button>
         </div>
 
-        <div className="max-h-[75vh] overflow-y-auto px-5 py-4">
+        <div className="max-h-[85vh] overflow-y-auto px-5 py-4 sm:max-h-[75vh]">
           {loading ? (
             <div className="text-sm text-zinc-600">Loading…</div>
           ) : !isAuthed ? (
@@ -310,7 +310,7 @@ export function AddPropertyModalHost() {
                     Purpose
                   </span>
                   <select
-                    className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm"
+                    className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base sm:text-sm"
                     value={form.purpose}
                     onChange={(e) =>
                       setForm((p) => ({
@@ -329,7 +329,7 @@ export function AddPropertyModalHost() {
                     Usage
                   </span>
                   <select
-                    className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm"
+                    className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base sm:text-sm"
                     value={form.categoryType}
                     onChange={(e) =>
                       setForm((p) => ({
@@ -352,7 +352,7 @@ export function AddPropertyModalHost() {
                     Category
                   </span>
                   <select
-                    className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm"
+                    className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base sm:text-sm"
                     value={form.categoryId}
                     onChange={(e) =>
                       setForm((p) => ({
@@ -375,7 +375,7 @@ export function AddPropertyModalHost() {
                     Subcategory
                   </span>
                   <select
-                    className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm"
+                    className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base sm:text-sm"
                     value={form.subCategoryId}
                     onChange={(e) =>
                       setForm((p) => ({ ...p, subCategoryId: e.target.value }))
@@ -395,7 +395,7 @@ export function AddPropertyModalHost() {
                   Title
                 </span>
                 <input
-                  className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm"
+                  className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base sm:text-sm"
                   value={form.title}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, title: e.target.value }))
@@ -408,7 +408,7 @@ export function AddPropertyModalHost() {
                   Description
                 </span>
                 <textarea
-                  className="min-h-[90px] rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm"
+                  className="min-h-[90px] rounded-xl border border-zinc-200 bg-white px-3 py-2 text-base sm:text-sm"
                   value={form.description}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, description: e.target.value }))
@@ -425,7 +425,7 @@ export function AddPropertyModalHost() {
                   </span>
                   <input
                     inputMode="numeric"
-                    className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm"
+                    className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base sm:text-sm"
                     value={form.price}
                     onChange={(e) =>
                       setForm((p) => ({ ...p, price: e.target.value }))
@@ -439,7 +439,7 @@ export function AddPropertyModalHost() {
                   </span>
                   <input
                     inputMode="numeric"
-                    className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm"
+                    className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base sm:text-sm"
                     value={form.areaSqft}
                     onChange={(e) =>
                       setForm((p) => ({ ...p, areaSqft: e.target.value }))
@@ -455,7 +455,7 @@ export function AddPropertyModalHost() {
                       </span>
                       <input
                         inputMode="numeric"
-                        className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm"
+                        className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base sm:text-sm"
                         value={form.bedrooms}
                         onChange={(e) =>
                           setForm((p) => ({ ...p, bedrooms: e.target.value }))
@@ -468,7 +468,7 @@ export function AddPropertyModalHost() {
                       </span>
                       <input
                         inputMode="numeric"
-                        className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm"
+                        className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base sm:text-sm"
                         value={form.bathrooms}
                         onChange={(e) =>
                           setForm((p) => ({ ...p, bathrooms: e.target.value }))
@@ -484,7 +484,7 @@ export function AddPropertyModalHost() {
                       Rent frequency
                     </span>
                     <select
-                      className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm"
+                      className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base sm:text-sm"
                       value={form.rentFrequency}
                       onChange={(e) =>
                         setForm((p) => ({
@@ -519,7 +519,7 @@ export function AddPropertyModalHost() {
                     City
                   </span>
                   <input
-                    className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm"
+                    className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base sm:text-sm"
                     value={form.city}
                     onChange={(e) =>
                       setForm((p) => ({ ...p, city: e.target.value }))
@@ -531,7 +531,7 @@ export function AddPropertyModalHost() {
                     Community
                   </span>
                   <input
-                    className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm"
+                    className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base sm:text-sm"
                     value={form.community}
                     onChange={(e) =>
                       setForm((p) => ({ ...p, community: e.target.value }))
@@ -545,7 +545,7 @@ export function AddPropertyModalHost() {
                   Cover image URL
                 </span>
                 <input
-                  className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm"
+                  className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base sm:text-sm"
                   value={form.coverImageUrl}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, coverImageUrl: e.target.value }))
@@ -558,7 +558,7 @@ export function AddPropertyModalHost() {
                   Extra image URLs (comma separated)
                 </span>
                 <input
-                  className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm"
+                  className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-base sm:text-sm"
                   value={form.imageUrlsCsv}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, imageUrlsCsv: e.target.value }))

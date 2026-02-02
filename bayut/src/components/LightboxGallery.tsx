@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 export function LightboxGallery({
   title,
@@ -24,28 +24,34 @@ export function LightboxGallery({
   const [zoomed, setZoomed] = useState(false);
 
   const current =
-    openIndex === null ? null : uniqueImages[openIndex] ?? uniqueImages[0] ?? null;
+    openIndex === null
+      ? null
+      : (uniqueImages[openIndex] ?? uniqueImages[0] ?? null);
 
-  function close() {
+  const close = useCallback(() => {
     setOpenIndex(null);
     setZoomed(false);
-  }
+  }, []);
 
-  function next() {
-    if (openIndex === null) return;
-    const n = uniqueImages.length;
-    if (!n) return;
-    setOpenIndex((openIndex + 1) % n);
+  const next = useCallback(() => {
+    setOpenIndex((idx) => {
+      if (idx === null) return idx;
+      const n = uniqueImages.length;
+      if (!n) return idx;
+      return (idx + 1) % n;
+    });
     setZoomed(false);
-  }
+  }, [uniqueImages.length]);
 
-  function prev() {
-    if (openIndex === null) return;
-    const n = uniqueImages.length;
-    if (!n) return;
-    setOpenIndex((openIndex - 1 + n) % n);
+  const prev = useCallback(() => {
+    setOpenIndex((idx) => {
+      if (idx === null) return idx;
+      const n = uniqueImages.length;
+      if (!n) return idx;
+      return (idx - 1 + n) % n;
+    });
     setZoomed(false);
-  }
+  }, [uniqueImages.length]);
 
   useEffect(() => {
     if (openIndex === null) return;
@@ -58,7 +64,7 @@ export function LightboxGallery({
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [openIndex, uniqueImages.length]);
+  }, [openIndex, close, next, prev]);
 
   if (uniqueImages.length === 0) return null;
 
@@ -88,7 +94,13 @@ export function LightboxGallery({
               onClick={() => setOpenIndex(idx)}
               className="relative h-20 w-28 flex-none overflow-hidden rounded-xl border border-zinc-200"
             >
-              <Image src={url} alt={title} fill className="object-cover" sizes="120px" />
+              <Image
+                src={url}
+                alt={title}
+                fill
+                className="object-cover"
+                sizes="120px"
+              />
             </button>
           ))}
         </div>
@@ -164,7 +176,8 @@ export function LightboxGallery({
             </div>
 
             <div className="mt-3 text-center text-xs text-white/70">
-              Click image to {zoomed ? "zoom out" : "zoom in"}. Use ← → keys to navigate.
+              Click image to {zoomed ? "zoom out" : "zoom in"}. Use ← → keys to
+              navigate.
             </div>
           </div>
         </div>

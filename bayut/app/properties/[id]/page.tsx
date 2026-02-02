@@ -131,7 +131,7 @@ export default async function PropertyDetailsPage({
           ].filter(Boolean) as string[];
 
           return (
-            <main className="mx-auto max-w-6xl px-4 py-8">
+            <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
               <div className="text-sm text-zinc-600">
                 <Link href="/" className="hover:text-zinc-900">
                   Home
@@ -202,16 +202,16 @@ export default async function PropertyDetailsPage({
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2">
+                      <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
                         <button
                           type="button"
-                          className="inline-flex h-10 items-center justify-center rounded-xl bg-zinc-100 px-4 text-sm font-semibold text-zinc-900 hover:bg-zinc-200"
+                          className="inline-flex h-10 w-full items-center justify-center rounded-xl bg-zinc-100 px-4 text-sm font-semibold text-zinc-900 hover:bg-zinc-200 sm:w-auto"
                         >
                           Save
                         </button>
                         <button
                           type="button"
-                          className="inline-flex h-10 items-center justify-center rounded-xl bg-zinc-100 px-4 text-sm font-semibold text-zinc-900 hover:bg-zinc-200"
+                          className="inline-flex h-10 w-full items-center justify-center rounded-xl bg-zinc-100 px-4 text-sm font-semibold text-zinc-900 hover:bg-zinc-200 sm:w-auto"
                         >
                           Share
                         </button>
@@ -433,7 +433,7 @@ export default async function PropertyDetailsPage({
                 </section>
 
                 <aside className="lg:col-span-5">
-                  <div className="sticky top-20">
+                  <div className="lg:sticky lg:top-20">
                     <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
                       <div className="text-sm font-semibold text-zinc-900">
                         Key information
@@ -519,7 +519,7 @@ export default async function PropertyDetailsPage({
               </div>
 
               <section className="mt-10">
-                <div className="flex items-end justify-between gap-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
                   <div>
                     <h2 className="text-lg font-semibold text-zinc-900">
                       Similar properties

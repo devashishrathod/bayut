@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type {
@@ -8,7 +10,6 @@ import type {
   RentFrequency,
 } from "../types/property";
 import { apiGet } from "../lib/api";
-import { PropertyCard } from "./PropertyCard";
 import { SearchToast } from "./SearchToast";
 import { Pagination } from "./Pagination";
 import {
@@ -197,24 +198,102 @@ export function PropertiesResultsClient({
           </div>
         </div>
 
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-4 flex flex-col gap-4">
           {loading
-            ? Array.from({ length: 9 }).map((_, i) => (
+            ? Array.from({ length: 8 }).map((_, i) => (
                 <div
                   key={i}
                   className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm"
                 >
-                  <div className="h-44 w-full animate-pulse bg-zinc-100" />
-                  <div className="space-y-3 p-4">
-                    <div className="h-4 w-3/4 animate-pulse rounded bg-zinc-100" />
-                    <div className="h-4 w-1/2 animate-pulse rounded bg-zinc-100" />
-                    <div className="h-4 w-2/3 animate-pulse rounded bg-zinc-100" />
+                  <div className="flex flex-col sm:flex-row">
+                    <div className="h-52 w-full animate-pulse bg-zinc-100 sm:h-[160px] sm:w-[240px]" />
+                    <div className="flex-1 space-y-3 p-4">
+                      <div className="h-4 w-1/3 animate-pulse rounded bg-zinc-100" />
+                      <div className="h-5 w-1/2 animate-pulse rounded bg-zinc-100" />
+                      <div className="h-4 w-5/6 animate-pulse rounded bg-zinc-100" />
+                      <div className="h-4 w-2/3 animate-pulse rounded bg-zinc-100" />
+                    </div>
                   </div>
                 </div>
               ))
-            : (data?.items ?? []).map((p) => (
-                <PropertyCard key={p.id} property={p} />
-              ))}
+            : (data?.items ?? []).map((p) => {
+                const isRent = p.purpose === "rent";
+                const formattedPrice = `AED ${p.price.toLocaleString()}`;
+                const priceLabel = isRent
+                  ? p.rentFrequency
+                    ? `${formattedPrice} / ${p.rentFrequency}`
+                    : formattedPrice
+                  : formattedPrice;
+                const typeLabel = p.subCategory?.name ?? p.category.name;
+                const locationLine = `${p.community}, ${p.city}`;
+                return (
+                  <Link
+                    key={p.id}
+                    href={`/properties/${p.id}`}
+                    prefetch
+                    className="group block overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition-shadow hover:shadow-md"
+                  >
+                    <div className="flex flex-col sm:flex-row">
+                      <div className="relative h-52 w-full shrink-0 sm:h-[160px] sm:w-[240px]">
+                        <Image
+                          src={p.coverImageUrl}
+                          alt={p.title}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 640px) 100vw, 240px"
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1 p-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="text-xs font-semibold text-zinc-600">
+                              {typeLabel}
+                            </div>
+                            <div className="mt-1 text-base font-semibold text-emerald-700">
+                              {priceLabel}
+                            </div>
+                          </div>
+                          <div className="shrink-0 text-right text-[11px] text-zinc-600">
+                            {p.bedrooms} Beds
+                            <div>{p.bathrooms} Baths</div>
+                          </div>
+                        </div>
+
+                        <h3 className="mt-2 line-clamp-2 text-sm font-semibold text-zinc-900">
+                          {p.title}
+                        </h3>
+                        <div className="mt-2 text-xs text-zinc-600">
+                          {locationLine}
+                        </div>
+                        <div className="mt-2 text-xs text-zinc-600">
+                          Area: {p.areaSqft.toLocaleString()} sqft
+                        </div>
+
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {p.furnished ? (
+                            <span className="rounded-full bg-zinc-100 px-2 py-1 text-[11px] text-zinc-700">
+                              Furnished
+                            </span>
+                          ) : null}
+                          {p.amenities.slice(0, 3).map((a) => (
+                            <span
+                              key={a.id}
+                              className="rounded-full bg-zinc-100 px-2 py-1 text-[11px] text-zinc-700"
+                            >
+                              {a.name}
+                            </span>
+                          ))}
+                          {p.amenities.length > 3 ? (
+                            <span className="rounded-full bg-zinc-100 px-2 py-1 text-[11px] text-zinc-700">
+                              +{p.amenities.length - 3} more
+                            </span>
+                          ) : null}
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
         </div>
 
         <Pagination

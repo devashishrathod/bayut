@@ -64,7 +64,7 @@ export function Footer() {
                 target="_blank"
                 rel="noreferrer"
                 aria-label="X"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-zinc-950 hover:bg-zinc-100"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-zinc-950 hover:bg-zinc-950 hover:text-white"
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -132,58 +132,44 @@ export function Footer() {
                 href="https://apps.apple.com/us/app/bayut-uae-property-search/id923263211"
                 target="_blank"
                 rel="noreferrer"
-                className="ml-1 inline-flex h-9 items-center rounded-xl border border-white/20 bg-black px-3 text-xs font-semibold text-white hover:bg-zinc-900"
+                className="ml-1 inline-flex h-10 items-center"
               >
-                <span className="mr-2 inline-flex">
-                  <svg
-                    viewBox="0 0 24 24"
-                    width="16"
-                    height="16"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path d="M16.6 13.3c0 2.8 2.5 3.8 2.5 3.8s-1.9 5.5-4.5 5.5c-1.2 0-2.1-.8-3.4-.8-1.4 0-2.4.8-3.7.8-2.3 0-5-5.3-5-9.3 0-3.9 2.5-6 4.9-6 1.2 0 2.3.8 3.1.8.8 0 2.1-.9 3.6-.9.6 0 2.7.1 4 2.1-.1.1-2.4 1.4-2.4 4zM14.2 3.3c.8-1 1.4-2.4 1.2-3.3-1.2.1-2.6.8-3.4 1.8-.8.9-1.4 2.3-1.2 3.2 1.2.1 2.6-.7 3.4-1.7z" />
-                  </svg>
-                </span>
-                Download on the App Store
+                <img
+                  src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
+                  alt="Download on the App Store"
+                  className="h-10 w-auto"
+                />
               </a>
               <a
                 href="https://play.google.com/store/apps/details?id=com.bayut.bayutapp&pli=1"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex h-9 items-center rounded-xl border border-white/20 bg-black px-3 text-xs font-semibold text-white hover:bg-zinc-900"
+                className="inline-flex h-10 items-center"
               >
-                <span className="mr-2 inline-flex">
-                  <svg
-                    viewBox="0 0 24 24"
-                    width="16"
-                    height="16"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path d="M3.6 2.8l10.9 9.2-2.8 2.7L3.6 2.8zm-.9 1.8v14.8c0 .5.2 1 .6 1.3l8.2-8-8.8-8.1zM20.1 12l-2.6-2.2-3 2.9 3 2.9 2.6-2.2c.6-.5.6-1.2 0-1.4zM3.6 21.2l10.9-9.2-2.8-2.7-8.1 11.9z" />
-                  </svg>
-                </span>
-                Get it on Google Play
+                <img
+                  src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png"
+                  alt="Get it on Google Play"
+                  className="h-10 w-auto"
+                />
               </a>
               <a
                 href="https://appgallery.huawei.com/app/C100083653"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex h-9 items-center rounded-xl border border-white/20 bg-black px-3 text-xs font-semibold text-white hover:bg-zinc-900"
+                className="inline-flex h-10 items-center"
               >
-                <span className="mr-2 inline-flex">
-                  <svg
-                    viewBox="0 0 24 24"
-                    width="16"
-                    height="16"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path d="M5 5h14v14H5V5zm2 2v10h10V7H7zm1.5 1.5H11v6H8.5v-6zm4.5 0H15.5v6H13v-6z" />
-                  </svg>
+                <span className="inline-flex h-10 items-center gap-2 rounded-md border border-white/20 bg-black px-3 text-white hover:border-white/30">
+                  <img
+                    src="https://upload.wikimedia.org/wikipedia/commons/5/5f/Huawei_AppGallery.svg"
+                    alt="AppGallery"
+                    className="h-5 w-5"
+                  />
+                  <span className="text-xs font-semibold leading-tight">
+                    Get it on
+                    <br />
+                    AppGallery
+                  </span>
                 </span>
-                Explore it on AppGallery
               </a>
             </div>
           </div>
