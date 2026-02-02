@@ -1,0 +1,10 @@
+- Use NestJS module-based architecture (auth/users/properties/prisma) and keep controllers thin, business logic in services.
+- Use Prisma + PostgreSQL via DATABASE_URL (works locally and on hosted free Postgres like Neon/Supabase).
+- Validate all incoming requests with DTOs (class-validator) and use a global ValidationPipe with whitelist + transform.
+- JWT auth: register/login/me endpoints; hash passwords with bcrypt; never store plain passwords.
+- API responses must be consistent and predictable (pagination meta, errors as proper HTTP exceptions).
+- Properties listing endpoint must support filtering + sorting + pagination.
+- NextJS App Router: keep pages server-first where possible, use reusable components, and ensure responsive UI similar to Bayut.
+- Never hardcode secrets. Use .env / environment variables and commit .env.example only.
+- Prefer small, focused files and clear folder structure; avoid "god" components/services.
+- Update README with setup steps and a clear section explaining where/how AI tools were used.
