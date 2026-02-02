@@ -7,7 +7,7 @@ import type {
   Property,
   RentFrequency,
 } from "../types/property";
-import { apiGetSafe } from "../lib/api";
+import { apiGet } from "../lib/api";
 import { PropertyCard } from "./PropertyCard";
 import { SearchToast } from "./SearchToast";
 import { Pagination } from "./Pagination";
@@ -136,21 +136,31 @@ export function PropertiesResultsClient({
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    setToast(null);
 
     const qs = buildQueryFromState(currentState);
 
-    void apiGetSafe<ListResponse>(`/properties?${qs.toString()}`).then(
-      (res) => {
+    void (async () => {
+      try {
+        const res = await apiGet<ListResponse>(`/properties?${qs.toString()}`);
         if (cancelled) return;
         setData(res);
-        setLoading(false);
 
         const items = res?.items ?? [];
         if (!items.length) {
           setToast("No properties found. Try changing filters or keywords.");
         }
-      },
-    );
+      } catch (e) {
+        if (cancelled) return;
+        const message =
+          e instanceof Error ? e.message : "Failed to load properties";
+        setToast(message);
+        setData({ items: [], total: 0, page: 1, limit: currentState.limit });
+      } finally {
+        if (cancelled) return;
+        setLoading(false);
+      }
+    })();
 
     return () => {
       cancelled = true;
@@ -188,9 +198,23 @@ export function PropertiesResultsClient({
         </div>
 
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {(data?.items ?? []).map((p) => (
-            <PropertyCard key={p.id} property={p} />
-          ))}
+          {loading
+            ? Array.from({ length: 9 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm"
+                >
+                  <div className="h-44 w-full animate-pulse bg-zinc-100" />
+                  <div className="space-y-3 p-4">
+                    <div className="h-4 w-3/4 animate-pulse rounded bg-zinc-100" />
+                    <div className="h-4 w-1/2 animate-pulse rounded bg-zinc-100" />
+                    <div className="h-4 w-2/3 animate-pulse rounded bg-zinc-100" />
+                  </div>
+                </div>
+              ))
+            : (data?.items ?? []).map((p) => (
+                <PropertyCard key={p.id} property={p} />
+              ))}
         </div>
 
         <Pagination

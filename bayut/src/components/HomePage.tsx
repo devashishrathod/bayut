@@ -45,6 +45,8 @@ export function HomePage({
   const searchParams = useSearchParams();
   const [metadata] = useState<PropertiesMetadata>(initialMetadata);
   const [featured, setFeatured] = useState<Property[]>(initialFeatured);
+  const [featuredLoading, setFeaturedLoading] = useState(false);
+  const [featuredError, setFeaturedError] = useState<string | null>(null);
   const carouselRef = useRef<HTMLDivElement | null>(null);
 
   const [filters, setFilters] = useState<PropertyFiltersState>({
@@ -283,11 +285,20 @@ export function HomePage({
   }
 
   useEffect(() => {
-    void apiGetSafe<Property[]>(
-      `/properties/featured?purpose=sale&limit=9`,
-    ).then((items) => {
+    setFeaturedLoading(true);
+    setFeaturedError(null);
+    void (async () => {
+      const items = await apiGetSafe<Property[]>(
+        `/properties/featured?purpose=sale&limit=9`,
+      );
+      if (items === null) {
+        setFeaturedError("Failed to load featured properties.");
+        setFeaturedLoading(false);
+        return;
+      }
       if (items?.length) setFeatured(items);
-    });
+      setFeaturedLoading(false);
+    })();
   }, []);
 
   const featuredToRender = featured.length ? featured : dummyFeatured;
@@ -503,12 +514,30 @@ export function HomePage({
             ref={carouselRef}
             className="flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
-            {randomizedFeatured.map((p) => (
-              <div key={p.id} className="w-[320px] shrink-0 snap-start">
-                <PropertyCard property={p} />
-              </div>
-            ))}
+            {featuredLoading
+              ? Array.from({ length: 6 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="w-[320px] shrink-0 snap-start overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm"
+                  >
+                    <div className="h-44 w-full animate-pulse bg-zinc-100" />
+                    <div className="space-y-3 p-4">
+                      <div className="h-4 w-3/4 animate-pulse rounded bg-zinc-100" />
+                      <div className="h-4 w-1/2 animate-pulse rounded bg-zinc-100" />
+                      <div className="h-4 w-2/3 animate-pulse rounded bg-zinc-100" />
+                    </div>
+                  </div>
+                ))
+              : randomizedFeatured.map((p) => (
+                  <div key={p.id} className="w-[320px] shrink-0 snap-start">
+                    <PropertyCard property={p} />
+                  </div>
+                ))}
           </div>
+
+          {featuredError ? (
+            <div className="mt-3 text-sm text-zinc-600">{featuredError}</div>
+          ) : null}
 
           <div className="pointer-events-none absolute inset-y-0 left-0 hidden items-center md:flex">
             <CarouselArrowButton
