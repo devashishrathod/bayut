@@ -44,12 +44,12 @@ function KeyValueGrid({
   items: Array<{ label: string; value: React.ReactNode }>;
 }) {
   return (
-    <div className="grid grid-cols-1 gap-0 rounded-2xl border border-zinc-200 bg-white shadow-sm">
-      <div className="grid grid-cols-1 gap-0 sm:grid-cols-2">
+    <div className="grid grid-cols-1 rounded-xl border border-zinc-200 bg-white">
+      <div className="grid grid-cols-1 sm:grid-cols-2">
         {items.map((it) => (
           <div
             key={it.label}
-            className="flex items-center justify-between gap-4 border-b border-zinc-100 px-5 py-4"
+            className="flex items-start justify-between gap-6 border-b border-zinc-100 px-5 py-4 last:border-b-0"
           >
             <div className="text-sm text-zinc-600">{it.label}</div>
             <div className="text-sm font-semibold text-zinc-900">
@@ -131,7 +131,7 @@ export default async function PropertyDetailsPage({
           ].filter(Boolean) as string[];
 
           return (
-            <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
+            <main className="mx-auto max-w-7xl px-4 py-6 sm:py-10">
               <div className="text-sm text-zinc-600">
                 <Link href="/" className="hover:text-zinc-900">
                   Home
@@ -155,26 +155,39 @@ export default async function PropertyDetailsPage({
                     </div>
                   </div>
 
-                  <div className="mt-6 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+                  <div className="mt-6 rounded-xl border border-zinc-200 bg-white p-6">
                     <div className="flex flex-wrap items-start justify-between gap-4">
                       <div className="min-w-0">
-                        <div className="text-2xl font-semibold tracking-tight text-zinc-900">
+                        <div className="text-3xl font-semibold tracking-tight text-zinc-900">
                           {priceLabel}
                         </div>
-                        <p className="mt-2 text-sm text-zinc-600">
+                        <p className="mt-2 text-base text-zinc-600">
                           {locationLine}
                         </p>
 
-                        <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-zinc-700">
-                          <span className="font-semibold">
-                            {property.bedrooms} Bed
-                          </span>
-                          <span className="font-semibold">
-                            {property.bathrooms} Baths
-                          </span>
-                          <span className="font-semibold">
-                            {property.areaSqft.toLocaleString()} sqft
-                          </span>
+                        <div className="mt-4 flex flex-wrap items-center gap-3 text-zinc-800">
+                          <div className="inline-flex items-center gap-2 rounded-full bg-zinc-50 px-3 py-2 ring-1 ring-zinc-200">
+                            <span className="text-sm font-semibold">Beds:</span>
+                            <span className="text-sm font-semibold">
+                              {property.bedrooms === 0
+                                ? "Studio"
+                                : property.bedrooms}
+                            </span>
+                          </div>
+                          <div className="inline-flex items-center gap-2 rounded-full bg-zinc-50 px-3 py-2 ring-1 ring-zinc-200">
+                            <span className="text-sm font-semibold">
+                              Baths:
+                            </span>
+                            <span className="text-sm font-semibold">
+                              {property.bathrooms}
+                            </span>
+                          </div>
+                          <div className="inline-flex items-center gap-2 rounded-full bg-zinc-50 px-3 py-2 ring-1 ring-zinc-200">
+                            <span className="text-sm font-semibold">Area:</span>
+                            <span className="text-sm font-semibold">
+                              {property.areaSqft.toLocaleString()} sqft
+                            </span>
+                          </div>
                         </div>
 
                         <div className="mt-5 flex flex-wrap gap-2">
@@ -192,12 +205,12 @@ export default async function PropertyDetailsPage({
                         </div>
 
                         {shortHighlights.length ? (
-                          <div className="mt-4 text-sm font-semibold text-zinc-900">
+                          <div className="mt-4 text-base font-semibold text-zinc-900">
                             {shortHighlights.join(" | ")}
                           </div>
                         ) : null}
 
-                        <div className="mt-5 text-sm font-semibold text-zinc-900">
+                        <div className="mt-5 text-base font-semibold text-zinc-900">
                           {property.title}
                         </div>
                       </div>
@@ -219,9 +232,9 @@ export default async function PropertyDetailsPage({
                     </div>
                   </div>
 
-                  <div className="mt-6 grid gap-6">
+                  <div className="mt-8 grid gap-8">
                     <section>
-                      <h2 className="text-lg font-semibold text-zinc-900">
+                      <h2 className="text-xl font-semibold text-zinc-900">
                         Property Information
                       </h2>
                       <div className="mt-4">
@@ -297,7 +310,7 @@ export default async function PropertyDetailsPage({
                     </section>
 
                     <section>
-                      <h2 className="text-lg font-semibold text-zinc-900">
+                      <h2 className="text-xl font-semibold text-zinc-900">
                         Validated Information
                       </h2>
                       <div className="mt-4">
@@ -338,7 +351,7 @@ export default async function PropertyDetailsPage({
                     </section>
 
                     <section>
-                      <h2 className="text-lg font-semibold text-zinc-900">
+                      <h2 className="text-xl font-semibold text-zinc-900">
                         Building Information
                       </h2>
                       <div className="mt-4">
@@ -393,15 +406,15 @@ export default async function PropertyDetailsPage({
                       </div>
                     </section>
 
-                    <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-                      <h2 className="text-sm font-semibold text-zinc-900">
+                    <div className="rounded-xl border border-zinc-200 bg-white p-6">
+                      <h2 className="text-base font-semibold text-zinc-900">
                         Description
                       </h2>
-                      <p className="mt-3 whitespace-pre-line text-sm leading-6 text-zinc-700">
+                      <p className="mt-3 whitespace-pre-line text-base leading-7 text-zinc-700">
                         {property.description}
                       </p>
                       {property.notes ? (
-                        <div className="mt-4 rounded-xl bg-zinc-50 p-4 text-sm text-zinc-700">
+                        <div className="mt-4 rounded-xl bg-zinc-50 p-4 text-base text-zinc-700">
                           {property.notes}
                         </div>
                       ) : null}
@@ -409,23 +422,25 @@ export default async function PropertyDetailsPage({
 
                     {property.amenities?.length ? (
                       <section>
-                        <h2 className="text-lg font-semibold text-zinc-900">
+                        <h2 className="text-xl font-semibold text-zinc-900">
                           Features / Amenities
                         </h2>
-                        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                          {property.amenities.slice(0, 5).map((a) => (
-                            <div
-                              key={a.id}
-                              className="flex h-24 items-center justify-center rounded-2xl border border-zinc-200 bg-white px-3 text-center text-xs font-semibold text-zinc-800 shadow-sm"
-                            >
-                              {a.name}
-                            </div>
-                          ))}
-                          {property.amenities.length > 5 ? (
-                            <div className="flex h-24 items-center justify-center rounded-2xl border border-zinc-200 bg-white px-3 text-center text-xs font-semibold text-emerald-700 shadow-sm">
-                              +{property.amenities.length - 5} more amenities
-                            </div>
-                          ) : null}
+                        <div className="relative mt-4">
+                          <div className="flex gap-4 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                            {property.amenities.slice(0, 10).map((a) => (
+                              <div
+                                key={a.id}
+                                className="flex h-24 w-[180px] shrink-0 items-center justify-center rounded-xl bg-[#f7f2ea] px-4 text-center text-sm font-semibold text-zinc-900 ring-1 ring-[#eadfcd]"
+                              >
+                                {a.name}
+                              </div>
+                            ))}
+                            {property.amenities.length > 10 ? (
+                              <div className="flex h-24 w-[180px] shrink-0 items-center justify-center rounded-xl bg-[#f7f2ea] px-4 text-center text-sm font-semibold text-emerald-700 ring-1 ring-[#eadfcd]">
+                                +{property.amenities.length - 10} more
+                              </div>
+                            ) : null}
+                          </div>
                         </div>
                       </section>
                     ) : null}
@@ -434,7 +449,7 @@ export default async function PropertyDetailsPage({
 
                 <aside className="lg:col-span-5">
                   <div className="lg:sticky lg:top-20">
-                    <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+                    <div className="rounded-xl border border-zinc-200 bg-white p-6">
                       <div className="text-sm font-semibold text-zinc-900">
                         Key information
                       </div>
@@ -486,7 +501,7 @@ export default async function PropertyDetailsPage({
                       </div>
                     </div>
 
-                    <div className="mt-4 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+                    <div className="mt-4 rounded-xl border border-zinc-200 bg-white p-6">
                       <div className="text-sm font-semibold text-zinc-900">
                         Call agent
                       </div>
@@ -518,18 +533,18 @@ export default async function PropertyDetailsPage({
                 </aside>
               </div>
 
-              <section className="mt-10">
+              <section className="mt-12">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
                   <div>
-                    <h2 className="text-lg font-semibold text-zinc-900">
-                      Similar properties
+                    <h2 className="text-xl font-semibold text-zinc-900">
+                      Recommended for you
                     </h2>
                     <p className="mt-1 text-sm text-zinc-600">
                       More listings in {property.community} and nearby areas
                     </p>
                   </div>
                   <Link
-                    href="/"
+                    href="/properties"
                     className="text-sm font-semibold text-emerald-700 hover:text-emerald-800"
                   >
                     View more

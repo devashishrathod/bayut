@@ -13,10 +13,17 @@ async function bootstrap() {
     .map((s) => s.trim())
     .filter(Boolean);
 
+  const allowedOriginPatterns: RegExp[] = [
+    /^http:\/\/localhost(?::\d+)?$/,
+    /^http:\/\/127\.0\.0\.1(?::\d+)?$/,
+  ];
+
   app.enableCors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin)) return callback(null, true);
+      if (allowedOriginPatterns.some((re) => re.test(origin)))
+        return callback(null, true);
       return callback(new Error('Not allowed by CORS'), false);
     },
     credentials: true,

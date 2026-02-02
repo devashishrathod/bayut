@@ -174,7 +174,9 @@ async function main() {
     RentFrequency.daily,
   ];
 
-  const propertiesCount = 60;
+  const targetPropertiesCount = 150;
+  const existingCount = await prisma.property.count();
+  const propertiesCount = Math.max(0, targetPropertiesCount - existingCount);
 
   for (let i = 0; i < propertiesCount; i += 1) {
     const city = pickOne(cities);
@@ -187,22 +189,46 @@ async function main() {
       ? pickOne(commercialSubCategoryRows)
       : pickOne(residentialSubCategoryRows);
 
-    const bedrooms = isCommercial ? 0 : Math.floor(Math.random() * 5) + 1;
+    const bedrooms = isCommercial
+      ? 0
+      : Math.random() > 0.18
+        ? Math.floor(Math.random() * 5) + 1
+        : 0;
     const bathrooms = isCommercial
       ? 0
-      : Math.max(1, Math.floor(Math.random() * bedrooms) + 1);
+      : Math.max(1, Math.floor(Math.random() * Math.max(1, bedrooms)) + 1);
     const areaSqft = isCommercial
       ? 800 + Math.floor(Math.random() * 4200)
-      : 450 + bedrooms * 350 + Math.floor(Math.random() * 300);
-
-    const basePrice = purpose === PropertyPurpose.sale ? 650_000 : 55_000;
-    const multiplier = purpose === PropertyPurpose.sale ? 1 : 1;
-    const price = Math.round(
-      (basePrice + bedrooms * 120_000 + Math.random() * 250_000) * multiplier,
-    );
+      : 420 + Math.max(0, bedrooms) * 360 + Math.floor(Math.random() * 420);
 
     const rentFrequency =
       purpose === PropertyPurpose.rent ? pickOne(rentFrequencies) : null;
+
+    const price = (() => {
+      if (purpose === PropertyPurpose.sale) {
+        const base = isCommercial ? 950_000 : 650_000;
+        const bedroomsFactor = isCommercial ? 0 : bedrooms * 320_000;
+        const areaFactor = Math.floor(areaSqft * (180 + Math.random() * 80));
+        const noise = Math.floor(Math.random() * 900_000);
+        return Math.max(250_000, base + bedroomsFactor + areaFactor + noise);
+      }
+
+      const yearly =
+        (isCommercial ? 120_000 : 55_000) +
+        (isCommercial ? 0 : bedrooms * 40_000) +
+        Math.floor(Math.random() * 140_000);
+
+      if (rentFrequency === RentFrequency.monthly) {
+        return Math.max(2500, Math.floor(yearly / 12));
+      }
+      if (rentFrequency === RentFrequency.weekly) {
+        return Math.max(600, Math.floor(yearly / 52));
+      }
+      if (rentFrequency === RentFrequency.daily) {
+        return Math.max(120, Math.floor(yearly / 365));
+      }
+      return yearly;
+    })();
 
     const furnished = Math.random() > 0.6;
 
@@ -262,6 +288,27 @@ async function main() {
     const description =
       'Modern layout, bright interiors, and excellent community amenities. Close to transport, schools, and shopping.';
 
+    const location = `Near ${pickOne([
+      'metro station',
+      'mall',
+      'parks',
+      'business district',
+      'schools',
+      'beach access',
+    ])}`;
+    const notes = pickOne([
+      'Ready to move in.',
+      'High floor with open views.',
+      'Corner unit with great natural light.',
+      'Spacious layout ideal for families.',
+      'Excellent rental yield potential.',
+    ]);
+    const urgency = pickOne([
+      'this_month',
+      'within_2_months',
+      'flexible',
+    ] as const);
+
     const coverImageUrl = pickOne(coverImages);
     const imageUrls = pickMany(coverImages, 2, 4);
 
@@ -288,6 +335,9 @@ async function main() {
         furnished,
         city,
         community,
+        location,
+        notes,
+        urgency,
         developerName,
         ownership,
         balconySizeSqft: balconySizeSqft ?? undefined,
@@ -298,6 +348,24 @@ async function main() {
         totalParkingSpaces,
         totalBuildingAreaSqft,
         elevators,
+        contactName: pickOne([
+          'Devashish',
+          'Aman',
+          'Sara',
+          'Hassan',
+          'Fatima',
+          'Rahul',
+        ]),
+        contactEmail: pickOne([
+          'agent1@bayut-clone.dev',
+          'agent2@bayut-clone.dev',
+          'agent3@bayut-clone.dev',
+        ]),
+        contactPhone: pickOne([
+          '+971500000001',
+          '+971500000002',
+          '+971500000003',
+        ]),
         coverImageUrl,
         imageUrls,
         amenities: {

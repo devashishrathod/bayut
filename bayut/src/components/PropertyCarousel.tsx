@@ -64,22 +64,22 @@ export function PropertyCarousel({
       </div>
 
       {canScrollLeft ? (
-        <div className="pointer-events-none absolute inset-y-0 left-0 hidden items-center md:flex">
+        <div className="pointer-events-none absolute left-0 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center md:flex">
           <CarouselArrowButton
             direction="left"
             ariaLabel="Scroll left"
             onClick={() => scrollCarousel("left")}
-            className="ml-2"
+            className=""
           />
         </div>
       ) : null}
       {canScrollRight ? (
-        <div className="pointer-events-none absolute inset-y-0 right-0 hidden items-center md:flex">
+        <div className="pointer-events-none absolute right-0 top-1/2 hidden translate-x-1/2 -translate-y-1/2 items-center md:flex">
           <CarouselArrowButton
             direction="right"
             ariaLabel="Scroll right"
             onClick={() => scrollCarousel("right")}
-            className="mr-2"
+            className=""
           />
         </div>
       ) : null}

@@ -36,195 +36,6 @@ export function HomePage({
     limit: 20,
   });
 
-  const dummyFeatured = useMemo<Property[]>(
-    () => [
-      {
-        id: "dummy-1",
-        title: "Luxury 2BR Apartment with Skyline Views",
-        description: "Bright and modern apartment in a premium community.",
-        purpose: "sale",
-        category: {
-          id: "cat_residential",
-          name: "Residential",
-          type: "residential",
-        },
-        subCategory: { id: "sub_apartment", name: "Apartment" },
-        price: 1850000,
-        bedrooms: 2,
-        bathrooms: 2,
-        areaSqft: 1320,
-        rentFrequency: null,
-        furnished: true,
-        city: "Dubai",
-        community: "Downtown Dubai",
-        coverImageUrl:
-          "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1400&q=80",
-        imageUrls: [],
-        amenities: [
-          { id: "a1", name: "Pool" },
-          { id: "a2", name: "Gym" },
-          { id: "a3", name: "Parking" },
-        ],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-      {
-        id: "dummy-2",
-        title: "Modern 3BR Villa with Private Garden",
-        description:
-          "Spacious villa with premium finishes and great connectivity.",
-        purpose: "sale",
-        category: {
-          id: "cat_residential",
-          name: "Residential",
-          type: "residential",
-        },
-        subCategory: { id: "sub_villa", name: "Villa" },
-        price: 4250000,
-        bedrooms: 3,
-        bathrooms: 4,
-        areaSqft: 2860,
-        rentFrequency: null,
-        furnished: false,
-        city: "Dubai",
-        community: "Dubai Hills Estate",
-        coverImageUrl:
-          "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1400&q=80",
-        imageUrls: [],
-        amenities: [
-          { id: "a4", name: "Garden" },
-          { id: "a5", name: "Security" },
-          { id: "a6", name: "Community Park" },
-        ],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-      {
-        id: "dummy-3",
-        title: "Stylish 1BR Near Metro | High Floor",
-        description: "A smart layout with excellent city connectivity.",
-        purpose: "rent",
-        category: {
-          id: "cat_residential",
-          name: "Residential",
-          type: "residential",
-        },
-        subCategory: { id: "sub_apartment", name: "Apartment" },
-        price: 98000,
-        bedrooms: 1,
-        bathrooms: 1,
-        areaSqft: 780,
-        rentFrequency: "yearly",
-        furnished: true,
-        city: "Dubai",
-        community: "Dubai Marina",
-        coverImageUrl:
-          "https://images.unsplash.com/photo-1501183638710-841dd1904471?auto=format&fit=crop&w=1400&q=80",
-        imageUrls: [],
-        amenities: [
-          { id: "a7", name: "Metro Access" },
-          { id: "a8", name: "Balcony" },
-          { id: "a9", name: "Sea View" },
-        ],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-      {
-        id: "dummy-4",
-        title: "Premium 4BR Townhouse | Family Community",
-        description: "Comfortable living with schools and parks nearby.",
-        purpose: "rent",
-        category: {
-          id: "cat_residential",
-          name: "Residential",
-          type: "residential",
-        },
-        subCategory: { id: "sub_townhouse", name: "Townhouse" },
-        price: 245000,
-        bedrooms: 4,
-        bathrooms: 4,
-        areaSqft: 2510,
-        rentFrequency: "yearly",
-        furnished: false,
-        city: "Dubai",
-        community: "Arabian Ranches",
-        coverImageUrl:
-          "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1400&q=80",
-        imageUrls: [],
-        amenities: [
-          { id: "a10", name: "Community Pool" },
-          { id: "a11", name: "Kids Play Area" },
-          { id: "a12", name: "Covered Parking" },
-        ],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-      {
-        id: "dummy-5",
-        title: "Penthouse with Panoramic Views | Private Terrace",
-        description: "Exclusive penthouse with premium finishing and space.",
-        purpose: "sale",
-        category: {
-          id: "cat_residential",
-          name: "Residential",
-          type: "residential",
-        },
-        subCategory: { id: "sub_penthouse", name: "Penthouse" },
-        price: 12950000,
-        bedrooms: 4,
-        bathrooms: 5,
-        areaSqft: 5120,
-        rentFrequency: null,
-        furnished: false,
-        city: "Dubai",
-        community: "Palm Jumeirah",
-        coverImageUrl:
-          "https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6?auto=format&fit=crop&w=1400&q=80",
-        imageUrls: [],
-        amenities: [
-          { id: "a13", name: "Terrace" },
-          { id: "a14", name: "Private Lift" },
-          { id: "a15", name: "Concierge" },
-        ],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-      {
-        id: "dummy-6",
-        title: "Cozy Studio | Ready to Move | Great Value",
-        description:
-          "Well-maintained studio with a smart layout and amenities.",
-        purpose: "rent",
-        category: {
-          id: "cat_residential",
-          name: "Residential",
-          type: "residential",
-        },
-        subCategory: { id: "sub_apartment", name: "Apartment" },
-        price: 52000,
-        bedrooms: 0,
-        bathrooms: 1,
-        areaSqft: 420,
-        rentFrequency: "monthly",
-        furnished: true,
-        city: "Dubai",
-        community: "Jumeirah Village Circle",
-        coverImageUrl:
-          "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1400&q=80",
-        imageUrls: [],
-        amenities: [
-          { id: "a16", name: "Gym" },
-          { id: "a17", name: "Pool" },
-          { id: "a18", name: "24/7 Security" },
-        ],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-    ],
-
-    [],
-  );
-
   function openAddProperty() {
     const sp = new URLSearchParams(searchParams.toString());
     sp.set("addProperty", "1");
@@ -304,10 +115,8 @@ export function HomePage({
     };
   }, [featuredLoading, featured.length]);
 
-  const featuredToRender = featured.length ? featured : dummyFeatured;
-
   const randomizedFeatured = useMemo(() => {
-    const items = [...featuredToRender];
+    const items = [...featured];
     const seedSource = items.map((p) => p.id).join("|");
     let seed = 0;
     for (let i = 0; i < seedSource.length; i += 1) {
@@ -327,7 +136,7 @@ export function HomePage({
     }
 
     return items;
-  }, [featuredToRender]);
+  }, [featured]);
 
   function scrollCarousel(direction: "left" | "right") {
     const el = carouselRef.current;
@@ -537,6 +346,12 @@ export function HomePage({
                   </div>
                 ))}
           </div>
+
+          {!featuredLoading && !featuredError && featured.length === 0 ? (
+            <div className="mt-3 text-sm text-zinc-600">
+              No featured properties available right now.
+            </div>
+          ) : null}
 
           {featuredError ? (
             <div className="mt-3 text-sm text-zinc-600">{featuredError}</div>

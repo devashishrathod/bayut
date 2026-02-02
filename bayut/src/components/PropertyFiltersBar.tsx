@@ -215,19 +215,36 @@ export function PropertyFiltersBar({
               </button>
             </div>
 
-            <input
-              value={value.community ?? ""}
-              onChange={(e) =>
-                onChange({
-                  ...value,
-                  community: e.target.value || undefined,
-                  page: 1,
-                })
-              }
-              aria-label="Location"
-              placeholder="Enter location"
-              className="h-11 w-full min-w-0 flex-1 rounded-md border border-zinc-200 bg-white px-4 text-base text-zinc-900 placeholder:text-zinc-500 outline-none ring-emerald-200 focus:ring-4 sm:text-sm"
-            />
+            <div className="relative w-full min-w-0 flex-1">
+              <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-emerald-700">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-5 w-5"
+                  aria-hidden="true"
+                >
+                  <path d="M12 22s7-5.5 7-12a7 7 0 1 0-14 0c0 6.5 7 12 7 12Z" />
+                  <path d="M12 10a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
+                </svg>
+              </div>
+              <input
+                value={value.community ?? ""}
+                onChange={(e) =>
+                  onChange({
+                    ...value,
+                    community: e.target.value || undefined,
+                    page: 1,
+                  })
+                }
+                aria-label="Location"
+                placeholder="Enter location"
+                className="h-11 w-full min-w-0 rounded-md border border-zinc-200 bg-white pl-11 pr-4 text-base text-zinc-900 placeholder:text-zinc-500 outline-none ring-emerald-200 focus:ring-4 sm:text-sm"
+              />
+            </div>
 
             <div className="w-full sm:w-[160px]">
               <button
